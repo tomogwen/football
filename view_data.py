@@ -22,7 +22,7 @@ def create_pitch(fig, ax):
 
     lx1 = [0, 104, 104, 0, 0]
 
-    plt.plot(lx1, ly1, color="black", zorder=5)
+    ax.plot(lx1, ly1, color="black", zorder=5)
 
     # boxes, 6 yard box and goals
 
@@ -30,39 +30,39 @@ def create_pitch(fig, ax):
 
     ly2 = [13.84, 13.84, 54.16, 54.16]
     lx2 = [104, 87.5, 87.5, 104]
-    plt.plot(lx2, ly2, color="black", zorder=5)
+    ax.plot(lx2, ly2, color="black", zorder=5)
 
     ly3 = [13.84, 13.84, 54.16, 54.16]
     lx3 = [0, 16.5, 16.5, 0]
-    plt.plot(lx3, ly3, color="black", zorder=5)
+    ax.plot(lx3, ly3, color="black", zorder=5)
 
     # goals
     ly4 = [30.34, 30.34, 37.66, 37.66]
     lx4 = [104, 104.2, 104.2, 104]
-    plt.plot(lx4, ly4, color="black", zorder=5)
+    ax.plot(lx4, ly4, color="black", zorder=5)
 
     ly5 = [30.34, 30.34, 37.66, 37.66]
     lx5 = [0, -0.2, -0.2, 0]
-    plt.plot(lx5, ly5, color="black", zorder=5)
+    ax.plot(lx5, ly5, color="black", zorder=5)
 
     # 6 yard boxes#
     ly6 = [24.84, 24.84, 43.16, 43.16]
     lx6 = [104, 99.5, 99.5, 104]
-    plt.plot(lx6, ly6, color="black", zorder=5)
+    ax.plot(lx6, ly6, color="black", zorder=5)
 
     ly7 = [24.84, 24.84, 43.16, 43.16]
     lx7 = [0, 4.5, 4.5, 0]
-    plt.plot(lx7, ly7, color="black", zorder=5)
+    ax.plot(lx7, ly7, color="black", zorder=5)
 
     # Halfway line, penalty spots, and kickoff spot
 
     vcy5 = [0, 68]
     vcx5 = [52, 52]
-    plt.plot(vcx5, vcy5, color="black", zorder=5)
+    ax.plot(vcx5, vcy5, color="black", zorder=5)
 
-    plt.scatter(93, 34, color="black", zorder=5)
-    plt.scatter(11, 34, color="black", zorder=5)
-    plt.scatter(52, 34, color="black", zorder=5)
+    ax.scatter(93, 34, color="black", zorder=5)
+    ax.scatter(11, 34, color="black", zorder=5)
+    ax.scatter(52, 34, color="black", zorder=5)
 
     circle1 = plt.Circle((93.5, 34), 9.15, ls='solid', lw=1.5, color="black", fill=False, zorder=1, alpha=0)
     circle2 = plt.Circle((10.5, 34), 9.15, ls='solid', lw=1.5, color="black", fill=False, zorder=1, alpha=0)
@@ -209,6 +209,50 @@ def find_match(matches, home_id, away_id):
             return i, matches[i]['wyId']
 
 
+def plot_passes(home_id, away_id):
+    match_index, match_id = find_match(matches, home_id, away_id)
+
+    match = matches[match_index]
+    teamsData = match['teamsData']
+
+    home_id, home_name, away_id, away_name = team_names(teamsData, teams)
+
+    # os.system('clear')
+    print("\n-----------------------------")
+    print("EPL 2017/18, GW " + str(match['gameweek']))
+    print("Home team: " + home_name)
+    print("Away team: " + away_name)
+    print("-----------------------------")
+
+    match_events = identify_events(events, match['wyId'])
+
+    fig, axs = plt.subplots(1, 2, figsize=(10.4, 3.4))
+
+    # Home Team
+    passes = find_pass(match_events, home_id)
+    x, y = get_coords(passes)
+    x, y = scale_to_pitch(x, y)
+
+    fig, axs[0] = create_pitch(fig, axs[0])
+    sns.kdeplot(x, y, cmap="Greens", shade=True, shade_lowest=False, ax=axs[0])
+    axs[0].set_xlim(0, 104)
+    axs[0].set_ylim(0, 68)
+    axs[0].set_title(home_name + " Pass Locations")
+
+    # Away Team
+    passes = find_pass(match_events, away_id)
+    x, y = get_coords(passes)
+    x, y = scale_to_pitch(x, y)
+
+    fig, axs[1] = create_pitch(fig, axs[1])
+    sns.kdeplot(x, y, cmap="Greens", shade=True, shade_lowest=False, ax=axs[1])
+    axs[1].set_xlim(0, 104)
+    axs[1].set_ylim(0, 68)
+    axs[1].set_title(away_name + " Pass Locations")
+
+    plt.show()
+
+
 if __name__ == "__main__":
     matches, events, players, teams = import_data("England")
 
@@ -230,42 +274,5 @@ if __name__ == "__main__":
     home_id = 1609  # int(input("\nChoose Home Club ID > "))
     away_id = 1610  # int(input("Choose Away Club ID > "))
 
-    match_index, match_id = find_match(matches, home_id, away_id)
+    # plot_passes(home_id, away_id)
 
-    match = matches[match_index]
-    teamsData = match['teamsData']
-
-    home_id, home_name, away_id, away_name = team_names(teamsData, teams)
-
-    # os.system('clear')
-    print("\n-----------------------------")
-    print("EPL 2017/18, GW " + str(match['gameweek']))
-    print("Home team: " + home_name)
-    print("Away team: " + away_name)
-    print("-----------------------------")
-
-    fig, axs = plt.subplots(1, 2, figsize=(10.4, 6.8))
-
-    match_events = identify_events(events, match['wyId'])
-
-    passes = find_pass(match_events, home_id)
-    x, y = get_coords(passes)
-    x, y = scale_to_pitch(x, y)
-
-    fig, axs[0] = create_pitch(fig, axs[0])
-    sns.kdeplot(x, y, cmap="Greens", shade=True, shade_lowest=False, cbar_ax=axs[0])
-    axs[0].set_xlim(0, 104)
-    axs[0].set_ylim(0, 68)
-    axs[0].set_title(home_name + " Pass Locations")
-
-    passes = find_pass(match_events, away_id)
-    x, y = get_coords(passes)
-    x, y = scale_to_pitch(x, y)
-
-    fig, axs[1] = create_pitch(fig, axs[1])
-    sns.kdeplot(x, y, cmap="Greens", shade=True, shade_lowest=False, cbar_ax=axs[1])
-    axs[1].set_xlim(0, 104)
-    axs[1].set_ylim(0, 68)
-    axs[1].set_title(away_name + " Pass Locations")
-
-    plt.show()
