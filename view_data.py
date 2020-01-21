@@ -7,13 +7,13 @@ import seaborn as sns
 import os
 
 
-def create_pitch():
+def create_pitch(fig, ax):
     # code from http://petermckeever.com/2019/01/plotting-pitches-in-python/
 
     # n.b. alpha=0 in pitch creation
     pitch = 'white'
 
-    fig, ax = plt.subplots(figsize=(10.4, 6.8))
+    # fig, ax = plt.subplots(figsize=(10.4, 6.8))
     ax.axis('off')  # this hides the x and y ticks
 
     # side and goal lines #
@@ -225,7 +225,7 @@ if __name__ == "__main__":
     # os.system('clear')
     print('\n--- EPL 2017/18 Clubs ---\n')
     for i in range(len(eng_team_names)):
-        print("Club: " + eng_team_names[i] + ", ID: " + str(eng_team_ids[i]))
+        print(eng_team_names[i] + ", ID: " + str(eng_team_ids[i]))
 
     home_id = 1609  # int(input("\nChoose Home Club ID > "))
     away_id = 1610  # int(input("Choose Away Club ID > "))
@@ -244,21 +244,28 @@ if __name__ == "__main__":
     print("Away team: " + away_name)
     print("-----------------------------")
 
-    match_events = identify_events(events, match['wyId'])
-    passes = find_pass(match_events, home_id)
+    fig, axs = plt.subplots(1, 2, figsize=(10.4, 6.8))
 
+    match_events = identify_events(events, match['wyId'])
+
+    passes = find_pass(match_events, home_id)
     x, y = get_coords(passes)
     x, y = scale_to_pitch(x, y)
 
-    fig, ax = create_pitch()
-    sns.kdeplot(x, y, cmap="Greens", shade=True, shade_lowest=True, cbar_ax=ax)
-    plt.show()
+    fig, axs[0] = create_pitch(fig, axs[0])
+    sns.kdeplot(x, y, cmap="Greens", shade=True, shade_lowest=False, cbar_ax=axs[0])
+    axs[0].set_xlim(0, 104)
+    axs[0].set_ylim(0, 68)
+    axs[0].set_title(home_name + " Pass Locations")
 
     passes = find_pass(match_events, away_id)
-
     x, y = get_coords(passes)
     x, y = scale_to_pitch(x, y)
 
-    fig, ax = create_pitch()
-    sns.kdeplot(x, y, cmap="Greens", shade=True, shade_lowest=True, cbar_ax=ax)
+    fig, axs[1] = create_pitch(fig, axs[1])
+    sns.kdeplot(x, y, cmap="Greens", shade=True, shade_lowest=False, cbar_ax=axs[1])
+    axs[1].set_xlim(0, 104)
+    axs[1].set_ylim(0, 68)
+    axs[1].set_title(away_name + " Pass Locations")
+
     plt.show()
