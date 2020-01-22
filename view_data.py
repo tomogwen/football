@@ -252,12 +252,17 @@ def plot_passes(home_id, away_id):
 
     plt.show()
 
+"""
+class Team:
+    def __init__(self, team_id, match_id):
+"""
+
 
 if __name__ == "__main__":
     matches, events, players, teams = import_data("England")
 
     # example_plot(matches, events, players, teams):
-    # plot_all(events, 'Shot')
+    plot_all(events, 'Shot')
 
     eng_team_names = []
     eng_team_ids = []
@@ -274,5 +279,4 @@ if __name__ == "__main__":
     home_id = 1609  # int(input("\nChoose Home Club ID > "))
     away_id = 1610  # int(input("Choose Away Club ID > "))
 
-    # plot_passes(home_id, away_id)
-
+    plot_passes(home_id, away_id)
