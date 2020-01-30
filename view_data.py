@@ -262,7 +262,7 @@ if __name__ == "__main__":
     matches, events, players, teams = import_data("England")
 
     # example_plot(matches, events, players, teams):
-    plot_all(events, 'Shot')
+    # plot_all(events, 'Shot')
 
     eng_team_names = []
     eng_team_ids = []
