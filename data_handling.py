@@ -4,6 +4,54 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
+def id_dicts():
+    wyId_id = {
+        '1613': 0,
+        '1673': 1,
+        '10531': 2,
+        '1659': 3,
+        '1651': 4,
+        '1646': 5,
+        '1631': 6,
+        '1633': 7,
+        '1639': 8,
+        '1644': 9,
+        '1623': 10,
+        '1627': 11,
+        '1625': 12,
+        '1624': 13,
+        '1628': 14,
+        '1619': 15,
+        '1612': 16,
+        '1610': 17,
+        '1611': 18,
+        '1609': 19
+    }
+    wyId_name = {
+        '1613': "Newcastle United",
+        '1673': "Huddersfield Town",
+        '10531': "Swansea City",
+        '1659': "AFC Bournemouth",
+        '1651': "Brighton & Hove Albion",
+        '1646': "Burnley",
+        '1631': "Leicester City",
+        '1633': "West Ham United",
+        '1639': "Stoke City",
+        '1644': "Watford",
+        '1623': "Everton",
+        '1627': "West Bromwich Albion",
+        '1625': "Manchester City",
+        '1624': "Tottenham Hotspur",
+        '1628': "Crystal Palace",
+        '1619': "Southampton",
+        '1612': "Liverpool",
+        '1610': "Chelsea",
+        '1611': "Manchester United",
+        '1609': "Arsenal"
+    }
+    return wyId_id, wyId_name
+
+
 def create_pitch(fig, ax):
     # code from http://petermckeever.com/2019/01/plotting-pitches-in-python/
 
@@ -170,6 +218,15 @@ def find_all(events, event_type):
     for i in range(len(events)):
         if events[i]['eventName'] == event_type:
             events_list.append(events[i])
+    return events_list
+
+
+def find_subtype(events, event_type, event_subtype):
+    events_list = []
+    for i in range(len(events)):
+        if events[i]['eventName'] == event_type:
+            if events[i]['subEventName'] == event_subtype:
+                events_list.append(events[i])
     return events_list
 
 
