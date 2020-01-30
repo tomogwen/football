@@ -1,11 +1,7 @@
 
 import json
-# import math
 import matplotlib.pyplot as plt
-import numpy as np
 import seaborn as sns
-import os
-import data_handling as dh
 
 
 def create_pitch(fig, ax):
@@ -106,6 +102,30 @@ def import_data(country):
     return matches, events, players, teams
 
 
+def import_all():
+    players = load_file("data/players.json")
+    teams = load_file("data/teams.json")
+
+    competitions = ["England",
+                    "European_Championship",
+                    "France",
+                    "Germany",
+                    "Italy",
+                    "Spain",
+                    "World_Cup"]
+
+    matches_temp, events_temp = [], []
+    for i in range(len(competitions)):
+        print("Importing matches from " + competitions[i])
+        matches_temp.append(load_file("data/matches/matches_" + competitions[i] + ".json"))
+        events_temp.append(load_file("data/events/events_" + competitions[i] + ".json"))
+
+    matches = [item for sublist in matches_temp for item in sublist]
+    events = [item for sublist in events_temp for item in sublist]
+
+    return matches, events, players, teams
+
+
 def find_team_name(id, teams):
     for i in range(len(teams)):
         # print(teams[i]['wyId'])
@@ -170,116 +190,7 @@ def scale_to_pitch(x, y):
     return new_x, new_y
 
 
-def example_plot(matches, events, players, teams):
-    match = matches[0]
-    teamsData = match['teamsData']
-
-    home_id, home_name, away_id, away_name = team_names(teamsData, teams)
-
-    print("-----------------------------")
-    print("EPL 2017/18, GW " + str(match['gameweek']))
-    print("Home team: " + home_name)
-    print("Away team: " + away_name)
-    print("-----------------------------")
-
-    match_events = identify_events(events, match['wyId'])
-    passes = find_pass(match_events, home_id)
-
-    x, y = get_coords(passes)
-    x, y = scale_to_pitch(x, y)
-
-    fig, ax = create_pitch()
-    sns.kdeplot(x, y, cmap="Greens", shade=True, shade_lowest=True, cbar_ax=ax)
-    plt.show()
-
-
-def plot_all(events, event_type):
-    events_list = find_all(events, event_type)
-
-    x, y = get_coords(events_list)
-    x, y = scale_to_pitch(x, y)
-
-    fig, ax = plt.subplots(figsize=(10.4, 6.8))
-    fig, ax = create_pitch(fig, ax)
-    sns.kdeplot(x, y, cmap="Greens", shade=True, shade_lowest=False, cbar_ax=ax)
-    plt.show()
-
-
 def find_match(matches, home_id, away_id):
     for i in range(len(matches)):
         if list(matches[i]['teamsData'].keys()) == [str(home_id), str(away_id)]:
             return i, matches[i]['wyId']
-
-
-def plot_passes(home_id, away_id):
-    match_index, match_id = find_match(matches, home_id, away_id)
-
-    match = matches[match_index]
-    teamsData = match['teamsData']
-
-    home_id, home_name, away_id, away_name = team_names(teamsData, teams)
-
-    # os.system('clear')
-    print("\n-----------------------------")
-    print("EPL 2017/18, GW " + str(match['gameweek']))
-    print("Home team: " + home_name)
-    print("Away team: " + away_name)
-    print("-----------------------------")
-
-    match_events = identify_events(events, match['wyId'])
-
-    fig, axs = plt.subplots(1, 2, figsize=(10.4, 3.4))
-
-    # Home Team
-    passes = find_pass(match_events, home_id)
-    x, y = get_coords(passes)
-    x, y = scale_to_pitch(x, y)
-
-    fig, axs[0] = create_pitch(fig, axs[0])
-    sns.kdeplot(x, y, cmap="Greens", shade=True, shade_lowest=False, ax=axs[0])
-    axs[0].set_xlim(0, 104)
-    axs[0].set_ylim(0, 68)
-    axs[0].set_title(home_name + " Pass Locations")
-
-    # Away Team
-    passes = find_pass(match_events, away_id)
-    x, y = get_coords(passes)
-    x, y = scale_to_pitch(x, y)
-
-    fig, axs[1] = create_pitch(fig, axs[1])
-    sns.kdeplot(x, y, cmap="Greens", shade=True, shade_lowest=False, ax=axs[1])
-    axs[1].set_xlim(0, 104)
-    axs[1].set_ylim(0, 68)
-    axs[1].set_title(away_name + " Pass Locations")
-
-    plt.show()
-
-"""
-class Team:
-    def __init__(self, team_id, match_id):
-"""
-
-
-if __name__ == "__main__":
-    matches, events, players, teams = import_data("England")
-    # matches, events, players, teams = dh.import_all()
-
-    # example_plot(matches, events, players, teams):
-    # plot_all(events, 'Shot')
-
-    eng_team_names = []
-    eng_team_ids = []
-    for i in range(len(teams)):
-        if teams[i]['area']['name'] == "England":
-            eng_team_names.append(teams[i]['officialName'])
-            eng_team_ids.append(teams[i]['wyId'])
-
-    # os.system('clear')
-    print('\n--- EPL 2017/18 Clubs ---\n')
-    for i in range(len(eng_team_names)):
-        print(eng_team_names[i] + ", ID: " + str(eng_team_ids[i]))
-
-    home_id = 1609  # int(input("\nChoose Home Club ID > "))
-    away_id = 1610  # int(input("Choose Away Club ID > "))
-
-    plot_passes(home_id, away_id)
