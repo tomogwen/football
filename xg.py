@@ -4,6 +4,7 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 from scipy.stats import gaussian_kde
+import seaborn as sns
 
 
 def generate_id_dicts(teams):
@@ -44,7 +45,7 @@ def generate_xg_pos(shots):
             else:
                 xg[i][j] = scored_count[i][j]/shots_count[i][j]
                 # outlier removal
-                if xg[i][j] == 1:
+                if xg[i][j] == 1 and i < 99:
                     xg[i][j] = 0
 
     # print("Saving xg table...")
@@ -79,34 +80,61 @@ def save_pens_dfks(xGpen, xGdfk):
 
 
 def reshape_xG(xG):
-    xG_channels = np.zeros((3, 104 * 68))
+    xG_x, xG_y = [], []
     for i in range(104):
         for j in range(68):
-            xG_channels[0][i*68 + j] = i
-            xG_channels[1][i*68 + j] = j
-            xG_channels[2][i*68 + j] = xG[i][j]
-    return xG_channels
+            for k in range(math.floor(100*xG[i][j])):
+                xG_x.append(i+0.5)
+                xG_y.append(j+0.5)
+    return xG_x, xG_y
+
+
+def generate_xG_values(shots, pens, DFKs):
+    xG = generate_xg_pos(shots)
+
+    num_pens, pens_scored, xGpen = count_scored(pens)
+    num_DFKs, DFKs_scored, xGdfk = count_scored(DFKs)
+    save_pens_dfks(xGpen, xGdfk)
+
+    return xG, xGpen, xGdfk
+
+
+def get_shots(events):
+    shots = dh.find_all(events, 'Shot')
+    pens = dh.find_subtype(events, 'Free Kick', 'Penalty')
+    DFKs = dh.find_subtype(events, 'Free Kick', 'Free kick shot')
+    return shots, pens, DFKs
+
+
+def create_xG_cont(xG, upper_bound=1):
+    xG_x, xG_y = reshape_xG(xG)
+
+    xG_kern = gaussian_kde([xG_x, xG_y])
+    xG_cont = np.zeros((104, 68))
+
+    for i in range(104):
+        for j in range(68):
+            xG_cont[i][j] = xG_kern([i, j])
+    xG_cont = (upper_bound / np.amax(xG_cont)) * xG_cont
+
+    np.save("models/xG_cont.npy", xG_cont)
+
+    return xG_cont
 
 
 if __name__ == "__main__":
 
-    xG = np.load("models/xg_pos.npy")
+    xG = np.load("models/xg_cont.npy")
     xGfk = np.load("models/xGfk.npy")
-    # matches, events, players, teams = dh.import_data("England")
+
+    matches, events, players, teams = dh.import_data("England")
     # matches, events, players, teams = dh.import_all()
 
-    # shots = dh.find_all(events, 'Shot')
-    # pens = dh.find_subtype(events, 'Free Kick', 'Penalty')
-    # DFKs = dh.find_subtype(events, 'Free Kick', 'Free kick shot')
+    # shots, pens, DFKs = get_shots(events)
 
-    # xg = generate_xg_pos(shots)
-    # num_pens, pens_scored, xGpen = count_scored(pens)
-    # num_DFKs, DFKs_scored, xGdfk = count_scored(DFKs)
-    # save_pens_dfks(xGpen, xGdfk)
-
-    # plot_xg(xg)
+    # xG, xGpen, xGdfk = generate_xG_values(shots, pens DFKs)
+    # xG_cont = create_xG_cont(xG)
 
     # wyId_id, wyId_name = dh.id_dicts()
 
-    xG_channels = reshape_xG(xG)
-    G_cont = gaussian_kde(xG_channels)
+    plot_xg(xG)
